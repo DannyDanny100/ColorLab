@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+
+        /* colors and variables */
+        :root {
+            --void:   #09090e;
+            --panel:  #111118;
+            --surface:#17171f;
+            --border: #252535;
+            --faint:  #32324a;
+            --muted:  #6a6a82;
+            --text:   #e6e6f0;
+
+            --accent:     #ffffff;
+            --accent-dim: rgba(255,255,255,0.08);
+
+            --c-red:    #ff3333;
+            --c-blue:   #2d8fff;
+            --c-green:  #2dff7a;
+            --c-yellow: #ffd000;
+            --c-purple: #b366ff;
+            --c-brown:  #c47a3a;
+            --c-black:  #aaaaaa;
+            --c-gray:   #9999aa;
+
+            --header-h:  54px;
+            --r:  6px;
+            --rl: 12px;
+        }
+
+        /* basic reset */
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        html,body{height:100%;background:var(--void);color:var(--text);
+            font-family:'Space Grotesk',sans-serif;font-size:15px;line-height:1.6;overflow:hidden;}
+
+        /* main layout */
+        .app{
+            display:grid;
+            grid-template-rows:var(--header-h) 1fr;
+            grid-template-columns:1fr;
+            height:100vh;
+        }
+
+        /* header and nav */
+        header{
+            grid-column:1/-1;
+            background:var(--panel);
+            border-bottom:1px solid var(--border);
+            display:flex;align-items:center;
+            padding:0 1.25rem;gap:0.25rem;
+            position:relative;z-index:100;
+        }
+        .logo{
+            font-size:1rem;font-weight:700;letter-spacing:-0.02em;
+            color:var(--text);margin-right:1.5rem;white-space:nowrap;flex-shrink:0;
+        }
+        .logo span{color:var(--accent);transition:color .35s;}
+        nav{display:flex;align-items:center;gap:0.1rem;overflow-x:auto;scrollbar-width:none;}
+        nav::-webkit-scrollbar{display:none;}
+        .nb{
+            background:none;border:none;color:var(--muted);
+            font-family:'Space Grotesk',sans-serif;font-size:0.78rem;font-weight:500;
+            padding:0.38rem 0.8rem;border-radius:var(--r);cursor:pointer;white-space:nowrap;
+            transition:color .15s,background .15s;
+        }
+        .nb:hover{color:var(--text);background:var(--surface);}
+        .nb.active{font-weight:600;}
+
+        .nb[data-page="red"].active    {color:var(--c-red);   background:rgba(255,51,51,.1);}
+        .nb[data-page="blue"].active   {color:var(--c-blue);  background:rgba(45,143,255,.1);}
+        .nb[data-page="green"].active  {color:var(--c-green); background:rgba(45,255,122,.1);}
+        .nb[data-page="yellow"].active {color:var(--c-yellow);background:rgba(255,208,0,.1);}
+        .nb[data-page="purple"].active {color:var(--c-purple);background:rgba(179,102,255,.1);}
+        .nb[data-page="showcase"].active{color:var(--text);   background:var(--surface);}
+
+        /* main content area */
+        main{overflow-y:auto;overflow-x:hidden;position:relative;background:var(--void);}
+        main::before{
+            content:'';position:fixed;
+            inset:var(--header-h) 0 0 0;
+            background-image:linear-gradient(var(--surface) 1px,transparent 1px),
+            linear-gradient(90deg,var(--surface) 1px,transparent 1px);
+            background-size:36px 36px;opacity:.45;pointer-events:none;z-index:0;
+        }
+
+        /* pages */
+        .page{display:none;min-height:100%;padding:2rem 2rem 3rem;position:relative;z-index:1;}
+        .page.active{display:block;}
+
+        .eyebrow{
+            font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:.12em;
+            text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;
+        }
+        .page-title{
+            font-size:2.4rem;font-weight:700;letter-spacing:-.04em;line-height:1.1;
+            margin-bottom:.6rem;
+        }
+        .page-sub{
+            font-size:.9rem;color:var(--muted);max-width:520px;
+            margin-bottom:2rem;line-height:1.65;
+        }
+
+        /* home page grid */
+        .home-grid{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:1rem;margin-bottom:1.5rem;
+        }
+        .hc{
+            border:1px solid var(--border);border-radius:var(--rl);
+            padding:1.1rem;background:var(--panel);cursor:pointer;
+            transition:transform .2s,box-shadow .2s;
+        }
+        .hc:hover{transform:translateY(-2px);}
+        .hc .dot{width:28px;height:28px;border-radius:50%;margin-bottom:.75rem;}
+        .hc h3{font-size:.85rem;font-weight:600;margin-bottom:.3rem;}
+        .hc p{font-size:.72rem;color:var(--muted);line-height:1.55;}
+        .hc .go{
+            font-family:'Space Mono',monospace;font-size:.6rem;
+            letter-spacing:.08em;text-transform:uppercase;
+            margin-top:.6rem;display:block;opacity:.55;transition:opacity .2s;
+        }
+        .hc:hover .go{opacity:1;}
+
+        .hc.red    {border-color:rgba(255,51,51,.25);}   .hc.red .dot   {background:var(--c-red);box-shadow:0 0 12px rgba(255,51,51,.4);}   .hc.red h3,.hc.red .go   {color:var(--c-red);}
+        .hc.blue   {border-color:rgba(45,143,255,.25);}  .hc.blue .dot  {background:var(--c-blue);box-shadow:0 0 12px rgba(45,143,255,.4);} .hc.blue h3,.hc.blue .go  {color:var(--c-blue);}
+        .hc.green  {border-color:rgba(45,255,122,.25);}  .hc.green .dot {background:var(--c-green);box-shadow:0 0 12px rgba(45,255,122,.4);}  .hc.green h3,.hc.green .go  {color:var(--c-green);}
+        .hc.yellow {border-color:rgba(255,208,0,.25);}   .hc.yellow .dot{background:var(--c-yellow);box-shadow:0 0 12px rgba(255,208,0,.4);}  .hc.yellow h3,.hc.yellow .go {color:var(--c-yellow);}
+        .hc.purple {border-color:rgba(179,102,255,.25);} .hc.purple .dot{background:var(--c-purple);box-shadow:0 0 12px rgba(179,102,255,.4);}  .hc.purple h3,.hc.purple .go {color:var(--c-purple);}
+
+        .hc:hover.red    {box-shadow:0 4px 24px rgba(255,51,51,.2);}
+        .hc:hover.blue   {box-shadow:0 4px 24px rgba(45,143,255,.2);}
+        .hc:hover.green  {box-shadow:0 4px 24px rgba(45,255,122,.2);}
+        .hc:hover.yellow {box-shadow:0 4px 24px rgba(255,208,0,.2);}
+        .hc:hover.purple {box-shadow:0 4px 24px rgba(179,102,255,.2);}
+
+        /* lab page layout */
+        .lab-body{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:1.5rem;
+        }
+
+        /* mode switcher buttons */
+        .mode-switcher{display:flex;gap:.5rem;margin-bottom:1.5rem;}
+        .mb{
+            background:var(--panel);border:1px solid var(--border);
+            color:var(--muted);font-family:'Space Grotesk',sans-serif;
+            font-size:.78rem;font-weight:500;padding:.42rem 1rem;
+            border-radius:var(--r);cursor:pointer;transition:all .2s;
+        }
+        .mb:hover{color:var(--text);border-color:var(--faint);}
+
+        .mode-switcher[data-labcolor="red"]    .mb.active{color:var(--c-red);   background:rgba(255,51,51,.1);  border-color:var(--c-red);}
+        .mode-switcher[data-labcolor="blue"]   .mb.active{color:var(--c-blue);  background:rgba(45,143,255,.1); border-color:var(--c-blue);}
+        .mode-switcher[data-labcolor="green"]  .mb.active{color:var(--c-green); background:rgba(45,255,122,.1); border-color:var(--c-green);}
+        .mode-switcher[data-labcolor="yellow"] .mb.active{color:var(--c-yellow);background:rgba(255,208,0,.1);  border-color:var(--c-yellow);}
+        .mode-switcher[data-labcolor="purple"] .mb.active{color:var(--c-purple);background:rgba(179,102,255,.1);border-color:var(--c-purple);}
+
+        /* demo areas */
+        .demo-wrap{display:none;}
+        .demo-wrap.active{display:block;}
+
+        /* image boxes */
+        .img-grid{
+            display:grid;grid-template-columns:1fr 1fr;
+            gap:.75rem;margin-top:1.5rem;
+        }
+        .img-placeholder{
+            aspect-ratio:16/10;
+            background:var(--surface);
+            border:1.5px solid var(--border);
+            border-radius:var(--r);
+            position:relative;overflow:hidden;
+            display: flex; /* Added to help center the contained image */
+            align-items: center;
+            justify-content: center;
+        }
+        .img-placeholder img{
+            position:relative; /* Changed from absolute so it respects flex centering */
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain; /* CHANGED: Shows the whole image without cropping */
+            border-radius:var(--r);
+        }
+
+        /* fact panels with bullets */
+        .fact-panel{
+            background:var(--panel);border:1px solid var(--border);
+            border-radius:var(--rl);padding:1.25rem;
+        }
+        .fact-panel h4{
+            font-size:.72rem;font-weight:700;letter-spacing:.1em;
+            text-transform:uppercase;color:var(--muted);
+            margin-bottom:.75rem;font-family:'Space Mono',monospace;
+        }
+        .fact-panel ul{list-style:none;display:flex;flex-direction:column;gap:.5rem;}
+        .fact-panel li{
+            font-size:.8rem;color:var(--text);line-height:1.55;
+            padding-left:1rem;position:relative;
+        }
+        .fact-panel li::before{
+            content:'-';position:absolute;left:0;
+            color:var(--accent);font-size:.75rem;top:.05rem;
+            transition:color .35s;
+        }
+
+        .fact-panel.red    li::before{color:var(--c-red);}
+        .fact-panel.blue   li::before{color:var(--c-blue);}
+        .fact-panel.green  li::before{color:var(--c-green);}
+        .fact-panel.yellow li::before{color:var(--c-yellow);}
+        .fact-panel.purple li::before{color:var(--c-purple);}
+
+        /* interactive demos */
+        .demo-shell{
+            background:var(--surface);border:1px solid var(--border);
+            border-radius:var(--rl);overflow:hidden;
+        }
+
+        .red-game{
+            background:#0c0808;min-height:260px;position:relative;
+            display:flex;align-items:center;justify-content:center;cursor:pointer;
+        }
+        .dmg-vignette{
+            position:absolute;inset:0;pointer-events:none;border-radius:var(--rl);
+            box-shadow:inset 0 0 0 0 transparent;transition:box-shadow .08s;
+        }
+        .red-game.hit .dmg-vignette{
+            animation:dmgflash .45s ease-out forwards;
+        }
+        @keyframes dmgflash{
+            0%  {box-shadow:inset 0 0 0 5px var(--c-red),inset 0 0 60px rgba(255,51,51,.6);}
+            60% {box-shadow:inset 0 0 0 5px var(--c-red),inset 0 0 80px rgba(255,51,51,.4);}
+            100%{box-shadow:inset 0 0 0 0 transparent;}
+        }
+        .rg-hud{position:absolute;top:1rem;left:1rem;right:1rem;display:flex;justify-content:space-between;}
+        .hp-row{display:flex;align-items:center;gap:.5rem;}
+        .hp-lbl{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--c-red);letter-spacing:.06em;}
+        .hp-track{width:100px;height:7px;background:rgba(255,51,51,.15);border-radius:4px;overflow:hidden;}
+        .hp-bar{height:100%;background:var(--c-red);box-shadow:0 0 6px var(--c-red);border-radius:4px;transition:width .25s;}
+        .score-lbl{font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.3);letter-spacing:.1em;}
+        .crosshair{width:32px;height:32px;position:relative;opacity:.4;}
+        .crosshair::before,.crosshair::after{content:'';position:absolute;background:var(--c-red);}
+        .crosshair::before{width:2px;height:100%;left:50%;transform:translateX(-50%);}
+        .crosshair::after{height:2px;width:100%;top:50%;transform:translateY(-50%);}
+        .click-hint{
+            position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);
+            font-family:'Space Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.25);
+            letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
+        }
+
+        .red-shop{background:#f7f7f7;min-height:260px;}
+        .sale-bar{
+            background:var(--c-red);padding:.75rem 1.25rem;
+            display:flex;align-items:center;justify-content:space-between;
+        }
+        .sale-badge{background:#fff;color:var(--c-red);font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:3px;letter-spacing:.04em;text-transform:uppercase;}
+        .sale-copy{color:#fff;font-size:.82rem;font-weight:600;margin-left:.75rem;}
+        .cd{display:flex;gap:.35rem;align-items:center;}
+        .cd-unit{background:rgba(0,0,0,.22);color:#fff;font-family:'Space Mono',monospace;font-size:.8rem;font-weight:700;padding:.1rem .35rem;border-radius:3px;min-width:28px;text-align:center;}
+        .cd-sep{color:rgba(255,255,255,.65);font-weight:700;font-size:.8rem;}
+        .shop-products{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;padding:1rem;}
+        .prod{background:#fff;border:1px solid #e5e5e5;border-radius:6px;padding:.75rem;}
+        .prod-img{aspect-ratio:1;background:#f0f0f0;border-radius:4px;margin-bottom:.5rem;display:flex;align-items:center;justify-content:center;font-size:1.6rem;}
+        .prod-name{font-size:.7rem;color:#333;font-weight:500;margin-bottom:.2rem;}
+        .prod-price{display:flex;gap:.4rem;align-items:baseline;}
+        .p-sale{font-weight:700;color:var(--c-red);font-size:.82rem;}
+        .p-orig{font-size:.68rem;color:#aaa;text-decoration:line-through;}
+
+        .green-game{background:#07100a;min-height:260px;position:relative;display:flex;align-items:center;justify-content:center;}
+        .heal-hud{position:absolute;top:1rem;left:1rem;right:1rem;display:flex;align-items:center;gap:.6rem;}
+        .heal-lbl{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--c-green);letter-spacing:.06em;}
+        .heal-track{flex:1;height:7px;background:rgba(45,255,122,.12);border-radius:4px;overflow:hidden;}
+        .heal-bar{height:100%;background:var(--c-green);box-shadow:0 0 6px var(--c-green);border-radius:4px;transition:width .6s cubic-bezier(.22,1,.36,1);}
+        .heal-pct{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--c-green);}
+        .heal-ring{position:absolute;width:70px;height:70px;border-radius:50%;border:2px solid var(--c-green);top:50%;left:50%;margin:-35px 0 0 -35px;opacity:0;pointer-events:none;}
+        .heal-ring.pop{animation:ringpop .65s ease-out forwards;}
+        @keyframes ringpop{0%{opacity:.8;transform:scale(.5);}100%{opacity:0;transform:scale(3.2);}}
+        .heal-btn{
+            background:rgba(45,255,122,.08);border:1px solid rgba(45,255,122,.35);
+            color:var(--c-green);font-family:'Space Mono',monospace;font-size:.62rem;
+            letter-spacing:.1em;text-transform:uppercase;padding:.6rem 1.2rem;
+            border-radius:4px;cursor:pointer;transition:all .2s;z-index:2;
+        }
+        .heal-btn:hover{background:rgba(45,255,122,.15);box-shadow:0 0 16px rgba(45,255,122,.25);}
+
+        .green-web{background:#f9fafb;min-height:260px;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+        .g-form{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1.5rem;width:100%;max-width:300px;box-shadow:0 2px 12px rgba(0,0,0,.05);}
+        .g-form-title{font-size:.9rem;font-weight:600;color:#111;margin-bottom:1rem;}
+        .f-row{margin-bottom:.6rem;}
+        .f-row label{display:block;font-size:.68rem;color:#6b7280;margin-bottom:.25rem;font-weight:500;}
+        .f-row input{width:100%;padding:.42rem .65rem;border:1px solid #d1d5db;border-radius:5px;font-size:.78rem;color:#111;outline:none;transition:border-color .2s,box-shadow .2s;font-family:'Space Grotesk',sans-serif;}
+        .f-row input:focus{border-color:#22c55e;box-shadow:0 0 0 2.5px rgba(34,197,94,.12);}
+        .g-submit{width:100%;padding:.55rem;background:#22c55e;color:#fff;border:none;border-radius:5px;font-size:.82rem;font-weight:600;cursor:pointer;margin-top:.75rem;transition:background .2s;font-family:'Space Grotesk',sans-serif;}
+        .g-submit:hover{background:#16a34a;}
+        .g-toast{display:none;align-items:center;gap:.5rem;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:.6rem .85rem;margin-top:.75rem;}
+        .g-toast.show{display:flex;}
+        .g-toast-check{width:18px;height:18px;background:#22c55e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff;flex-shrink:0;}
+        .g-toast-msg{font-size:.72rem;color:#15803d;font-weight:500;}
+
+        .blue-game{background:#060810;min-height:260px;position:relative;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;}
+        .hud-frame{position:absolute;inset:1rem;border:1px solid rgba(45,143,255,.15);border-radius:4px;pointer-events:none;}
+        .hc-corner{position:absolute;width:10px;height:10px;border-color:rgba(45,143,255,.6);border-style:solid;}
+        .hc-corner.tl{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+        .hc-corner.tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
+        .hc-corner.bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
+        .hc-corner.br{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+        .mana-display{text-align:center;}
+        .mana-val{font-size:2.6rem;font-weight:700;color:var(--c-blue);text-shadow:0 0 18px rgba(45,143,255,.5);letter-spacing:-.04em;display:block;}
+        .mana-lbl{font-size:.58rem;color:rgba(45,143,255,.5);letter-spacing:.15em;text-transform:uppercase;display:block;margin-bottom:.75rem;}
+        .mana-track{width:180px;height:5px;background:rgba(45,143,255,.1);border-radius:3px;margin:.5rem auto .75rem;overflow:hidden;}
+        .mana-fill{height:100%;background:var(--c-blue);border-radius:3px;box-shadow:0 0 6px var(--c-blue);transition:width .75s cubic-bezier(.22,1,.36,1);}
+        .mana-btn{background:rgba(45,143,255,.1);border:1px solid rgba(45,143,255,.35);color:var(--c-blue);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:.5rem 1rem;border-radius:3px;cursor:pointer;transition:all .2s;}
+        .mana-btn:hover{background:rgba(45,143,255,.18);box-shadow:0 0 14px rgba(45,143,255,.25);}
+        .hud-footer{position:absolute;bottom:1rem;left:1.5rem;right:1.5rem;display:flex;justify-content:space-between;}
+        .hud-stat{font-size:.58rem;color:rgba(45,143,255,.35);letter-spacing:.08em;text-transform:uppercase;}
+        .hud-stat span{color:rgba(45,143,255,.7);font-weight:700;}
+
+        .blue-web{background:#f0f4ff;min-height:260px;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+        .login-card{background:#fff;border:1px solid #dbeafe;border-radius:12px;padding:1.5rem;width:100%;max-width:280px;box-shadow:0 2px 16px rgba(37,99,235,.07);}
+        .login-head{text-align:center;margin-bottom:1.1rem;}
+        .lock-ico{width:36px;height:36px;background:#eff6ff;border-radius:50%;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+        .login-title{font-size:.88rem;font-weight:600;color:#111;}
+        .login-sub{font-size:.68rem;color:#9ca3af;margin-top:.15rem;}
+        .l-row{margin-bottom:.55rem;}
+        .l-row label{display:block;font-size:.68rem;color:#374151;margin-bottom:.2rem;font-weight:500;}
+        .l-row input{width:100%;padding:.4rem .65rem;border:1px solid #d1d5db;border-radius:5px;font-size:.78rem;color:#111;outline:none;transition:border-color .2s,box-shadow .2s;font-family:'Space Grotesk',sans-serif;}
+        .l-row input:focus{border-color:#2563eb;box-shadow:0 0 0 2.5px rgba(37,99,235,.12);}
+        .login-btn{width:100%;padding:.55rem;background:#2563eb;color:#fff;border:none;border-radius:5px;font-size:.82rem;font-weight:600;cursor:pointer;margin-top:.75rem;transition:background .2s;font-family:'Space Grotesk',sans-serif;}
+        .login-btn:hover{background:#1d4ed8;}
+        .ssl-badge{display:flex;align-items:center;justify-content:center;gap:.25rem;margin-top:.6rem;font-size:.62rem;color:#9ca3af;}
+
+        .yellow-game{background:#0b0900;min-height:260px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+        .q-hud{position:absolute;top:1rem;left:1rem;right:1rem;display:flex;justify-content:space-between;}
+        .q-lbl{font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(255,208,0,.45);letter-spacing:.08em;text-transform:uppercase;}
+        .q-lbl span{color:var(--c-yellow);}
+        .quest-map{position:relative;width:260px;height:180px;}
+        .qm-svg{position:absolute;inset:0;width:100%;height:100%;}
+        .wp{position:absolute;display:flex;flex-direction:column;align-items:center;gap:.25rem;}
+        .wp-dot{width:11px;height:11px;border-radius:50%;border:2px solid var(--c-yellow);}
+        .wp.done .wp-dot{background:var(--c-yellow);}
+        .wp.cur .wp-dot{background:var(--c-yellow);box-shadow:0 0 8px var(--c-yellow);animation:wpulse 1.4s infinite;}
+        @keyframes wpulse{0%,100%{box-shadow:0 0 6px var(--c-yellow);}50%{box-shadow:0 0 16px rgba(255,208,0,.7);}}
+        .wp-lbl{font-family:'Space Mono',monospace;font-size:.55rem;color:rgba(255,208,0,.5);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+        .wp.done .wp-lbl,.wp.cur .wp-lbl{color:var(--c-yellow);}
+        .wp.p1{top:8%;left:3%;}  .wp.p2{top:48%;left:23%;}
+        .wp.p3{top:12%;left:48%;} .wp.p4{top:58%;left:70%;}
+        .wp.p5{top:8%;left:87%;}
+        .y-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}
+
+        .yellow-web{background:#fafaf8;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.85rem;padding:1.5rem;}
+        .toast-stack{width:100%;max-width:360px;display:flex;flex-direction:column;gap:.6rem;}
+        .t-notice{display:flex;align-items:flex-start;gap:.65rem;padding:.75rem .85rem;border-radius:7px;border-left:3px solid #f59e0b;background:#fffbeb;box-shadow:0 1px 6px rgba(0,0,0,.05);}
+        .t-notice.info{border-left-color:#fbbf24;background:#fefce8;}
+        .t-ico{font-size:.9rem;flex-shrink:0;margin-top:.05rem;}
+        .t-title{font-weight:600;color:#92400e;font-size:.76rem;display:block;margin-bottom:.1rem;}
+        .t-body{color:#78350f;font-size:.72rem;}
+        .new-toast{display:none;align-items:flex-start;gap:.65rem;padding:.75rem .85rem;border-radius:7px;border-left:3px solid #f59e0b;background:#fffbeb;box-shadow:0 1px 6px rgba(0,0,0,.05);width:100%;max-width:360px;animation:slidein .3s ease;}
+        .new-toast.show{display:flex;}
+        @keyframes slidein{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+        .toast-trigger-btn{padding:.5rem 1rem;background:#f59e0b;color:#fff;border:none;border-radius:5px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:background .2s;}
+        .toast-trigger-btn:hover{background:#d97706;}
+
+        .purple-game{background:#08060f;min-height:260px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+        .spell-orbs{display:flex;gap:1.2rem;align-items:center;}
+        .orb{
+            width:60px;height:60px;border-radius:50%;
+            border:1.5px solid rgba(179,102,255,.4);
+            background:rgba(179,102,255,.06);
+            display:flex;align-items:center;justify-content:center;
+            font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(179,102,255,.6);
+            letter-spacing:.04em;text-transform:uppercase;flex-direction:column;gap:.15rem;
+            cursor:pointer;transition:all .2s;
+        }
+        .orb.charged{background:rgba(179,102,255,.15);border-color:rgba(179,102,255,.7);box-shadow:0 0 18px rgba(179,102,255,.3);}
+        .orb.charged .orb-icon{color:var(--c-purple);text-shadow:0 0 10px rgba(179,102,255,.8);}
+        .orb-icon{font-size:1.4rem;display:block;}
+        .orb:hover{border-color:rgba(179,102,255,.8);box-shadow:0 0 22px rgba(179,102,255,.35);}
+        .p-hud{position:absolute;top:1rem;left:1rem;right:1rem;display:flex;justify-content:space-between;}
+        .p-lbl{font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(179,102,255,.4);letter-spacing:.08em;text-transform:uppercase;}
+        .p-lbl span{color:var(--c-purple);}
+        .p-hint{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}
+
+        .purple-web{background:#f9f7ff;min-height:260px;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+        .premium-card{background:#fff;border:1px solid #e9d5ff;border-radius:12px;padding:1.5rem;width:100%;max-width:280px;box-shadow:0 2px 16px rgba(124,58,237,.08);text-align:center;}
+        .crown{font-size:2rem;margin-bottom:.5rem;}
+        .prem-title{font-size:1rem;font-weight:700;color:#4c1d95;margin-bottom:.25rem;}
+        .prem-sub{font-size:.72rem;color:#7c3aed;margin-bottom:1rem;}
+        .prem-price{font-size:1.8rem;font-weight:700;color:#4c1d95;letter-spacing:-.03em;}
+        .prem-price span{font-size:.8rem;font-weight:400;color:#8b5cf6;}
+        .prem-btn{width:100%;padding:.6rem;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:.85rem;font-weight:600;cursor:pointer;margin-top:1rem;transition:background .2s;font-family:'Space Grotesk',sans-serif;}
+        .prem-btn:hover{background:#6d28d9;}
+        .prem-features{list-style:none;margin-top:.85rem;display:flex;flex-direction:column;gap:.3rem;}
+        .prem-features li{font-size:.72rem;color:#6d28d9;}
+        .prem-features li::before{content:'- ';}
+
+        /* showcase page */
+        .showcase-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+        .sc-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;}
+        .sc-head{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+        .sc-title{font-size:.78rem;font-weight:600;}
+        .sc-badge{font-family:'Space Mono',monospace;font-size:.6rem;padding:.12rem .45rem;border-radius:3px;}
+        .sc-badge.wf{background:rgba(107,107,128,.2);color:var(--muted);}
+        .sc-badge.code{background:rgba(45,143,255,.12);color:var(--c-blue);}
+        .sc-badge.dec{background:rgba(45,255,122,.12);color:var(--c-green);}
+        .sc-badge.iter{background:rgba(255,208,0,.12);color:var(--c-yellow);}
+        .sc-body{padding:1.1rem;}
+        .wf-mock{background:#13131e;border:1px solid var(--border);border-radius:var(--r);padding:.85rem;font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);line-height:1.7;}
+        .wf-nav-row{display:flex;gap:.75rem;border-bottom:1px solid var(--border);padding-bottom:.35rem;margin-bottom:.5rem;}
+        .wf-active{color:var(--text);}
+        .wf-cols{display:grid;grid-template-columns:2fr 1fr;gap:.4rem;}
+        .wf-block{border:1px dashed var(--faint);padding:.35rem;border-radius:3px;}
+        .code-block{background:#0c0c14;border-radius:var(--r);padding:.85rem;font-family:'Space Mono',monospace;font-size:.64rem;line-height:1.8;overflow-x:auto;color:#7070a0;}
+        .kw{color:#c792ea;} .prop{color:var(--c-blue);} .val{color:var(--c-green);} .cmt{color:#2e2e48;} .sel{color:var(--c-yellow);}
+        .dec-list{display:flex;flex-direction:column;gap:.6rem;}
+        .dec-item{display:flex;gap:.6rem;}
+        .dec-n{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--c-green);font-weight:700;flex-shrink:0;margin-top:.12rem;}
+        .dec-t{font-size:.76rem;color:var(--muted);line-height:1.55;}
+        .dec-t strong{color:var(--text);font-weight:500;}
+        .iter-list{display:flex;flex-direction:column;gap:.6rem;}
+        .iter-item{display:flex;gap:.5rem;align-items:flex-start;}
+        .iter-tag{font-family:'Space Mono',monospace;font-size:.56rem;padding:.12rem .35rem;border-radius:3px;flex-shrink:0;margin-top:.2rem;text-transform:uppercase;letter-spacing:.04em;}
+        .iter-tag.v1{background:rgba(255,51,51,.1);color:var(--c-red);}
+        .iter-tag.v2{background:rgba(255,208,0,.1);color:var(--c-yellow);}
+        .iter-tag.v3{background:rgba(45,255,122,.1);color:var(--c-green);}
+        .iter-t{font-size:.76rem;color:var(--muted);line-height:1.55;}
+
+        /* mobile responsive */
+        @media(max-width:700px){
+            html,body{overflow:auto;}
+            .app{display:flex;flex-direction:column;height:auto;min-height:100vh;}
+            main::before{display:none;} main{overflow:visible;}
+            .home-grid{grid-template-columns:1fr 1fr;}
+            .lab-body{grid-template-columns:1fr;}
+            .img-grid{grid-template-columns:1fr 1fr;}
+            .showcase-grid{grid-template-columns:1fr;}
+        }
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">Color<span id="logo-dot">Lab</span></div>
+        <nav id="nav">
+            <button class="nb active" data-page="home">Home</button>
+            <button class="nb" data-page="red">Red</button>
+            <button class="nb" data-page="blue">Blue</button>
+            <button class="nb" data-page="green">Green</button>
+            <button class="nb" data-page="yellow">Yellow</button>
+            <button class="nb" data-page="purple">Purple</button>
+            <button class="nb" data-page="showcase">Showcase</button>
+        </nav>
+    </header>
+
+    <!-- MAIN -->
+    <main>
+
+        <!-- === HOME === -->
+        <section id="page-home" class="page active">
+            <p class="eyebrow">Color Psychology - Digital Interfaces</p>
+            <h1 class="page-title">Color Lab</h1>
+            <p class="page-sub">Each color triggers a physiological response before any conscious thought. Click a color to explore how it works in games and on the web.</p>
+            <div class="home-grid">
+                <div class="hc red"    data-nav="red"    tabindex="0" role="button"><div class="dot"></div><h3>Red</h3><p>Urgency, danger, damage, loss aversion.</p><span class="go">Open lab -</span></div>
+                <div class="hc blue"   data-nav="blue"   tabindex="0" role="button"><div class="dot"></div><h3>Blue</h3><p>Trust, calm, authority, security.</p><span class="go">Open lab -</span></div>
+                <div class="hc green"  data-nav="green"  tabindex="0" role="button"><div class="dot"></div><h3>Green</h3><p>Safety, healing, success, go.</p><span class="go">Open lab -</span></div>
+                <div class="hc yellow" data-nav="yellow" tabindex="0" role="button"><div class="dot"></div><h3>Yellow</h3><p>Attention, caution, wayfinding.</p><span class="go">Open lab -</span></div>
+                <div class="hc purple" data-nav="purple" tabindex="0" role="button"><div class="dot"></div><h3>Purple</h3><p>Magic, luxury, creativity, rarity.</p><span class="go">Open lab -</span></div>
+            </div>
+        </section>
+
+        <!-- === RED === -->
+        <section id="page-red" class="page">
+            <p class="eyebrow">01 - Red Lab</p>
+            <h1 class="page-title" style="color:var(--c-red)">Red</h1>
+            <p class="page-sub">Triggers fight-or-flight. Used for danger, urgency, and scarcity.</p>
+            <div class="mode-switcher" data-labcolor="red">
+                <button class="mb active" data-mode="red-game">- Game Mode</button>
+                <button class="mb" data-mode="red-shop">- Webshop Mode</button>
+            </div>
+            <div class="lab-body">
+                <div>
+                    <div id="red-game" class="demo-wrap active">
+                        <div class="demo-shell">
+                            <div class="red-game" id="dmg-demo">
+                                <div class="dmg-vignette" id="dmg-vig"></div>
+                                <div class="rg-hud">
+                                    <div class="hp-row"><span class="hp-lbl">HP</span><div class="hp-track"><div class="hp-bar" id="hp-bar" style="width:72%"></div></div></div>
+                                    <span class="score-lbl">SCORE: 04820</span>
+                                </div>
+                                <div class="crosshair"></div>
+                                <p class="click-hint">CLICK - TAKE DAMAGE</p>
+                            </div>
+                        </div>
+                        <div class="fact-panel red" style="margin-top:.75rem">
+                            <h4>Game - Red</h4>
+                            <ul>
+                                <li>Screen-edge red vignettes signal damage in FPS games (Battlefield, Halo, COD).</li>
+                                <li>Red activates the amygdala - the brain processes it as a threat signal before rational thought.</li>
+                                <li>Heart rate increases when the visual field is dominated by red.</li>
+                                <li>HP bars turn red near zero across virtually every game genre.</li>
+                                <li>Red critical hit numbers are used to signal high-value damage outputs to the player.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="red-shop" class="demo-wrap">
+                        <div class="demo-shell">
+                            <div class="red-shop">
+                                <div class="sale-bar">
+                                    <div style="display:flex;align-items:center"><span class="sale-badge">FLASH SALE</span><span class="sale-copy" style="margin-left:.75rem">30% off sitewide - ends when timer hits zero</span></div>
+                                    <div class="cd"><div class="cd-unit" id="cd-h">02</div><span class="cd-sep">:</span><div class="cd-unit" id="cd-m">47</div><span class="cd-sep">:</span><div class="cd-unit" id="cd-s">33</div></div>
+                                </div>
+                                <div class="shop-products">
+                                    <div class="prod"><div class="prod-img">- </div><div class="prod-name">Studio Headphones Pro</div><div class="prod-price"><span class="p-sale">DKK 1.049</span><span class="p-orig">DKK 1.499</span></div></div>
+                                    <div class="prod"><div class="prod-img">- </div><div class="prod-name">Mechanical Keyboard TKL</div><div class="prod-price"><span class="p-sale">DKK 699</span><span class="p-orig">DKK 999</span></div></div>
+                                    <div class="prod"><div class="prod-img">- </div><div class="prod-name">Wireless Gaming Mouse</div><div class="prod-price"><span class="p-sale">DKK 489</span><span class="p-orig">DKK 699</span></div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fact-panel red" style="margin-top:.75rem">
+                            <h4>Web - Red</h4>
+                            <ul>
+                                <li>Red countdown timers increase purchase conversion by exploiting loss aversion (Kahneman, 2011).</li>
+                                <li>"Sale" and "Out of stock" labels are almost universally red in e-commerce.</li>
+                                <li>Red error messages on forms are the global standard - broken input = red border.</li>
+                                <li>Red CTAs outperform green and blue in A/B tests on high-contrast light backgrounds.</li>
+                                <li>Red communicates urgency - the colour alone carries the message.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- IMAGES -->
+                    <div class="img-grid" style="margin-top:.75rem">
+                        <div class="img-placeholder"><img src="img/red-1.jpg.jpg" alt="Red example 1"></div>
+                        <div class="img-placeholder"><img src="img/red-2.jpg.jpg" alt="Red example 2"></div>
+                        <div class="img-placeholder"><img src="img/red-3.jpg.jpg" alt="Red example 3"></div>
+                        <div class="img-placeholder"><img src="img/red-4.jpg.jpg" alt="Red example 4"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- === BLUE === -->
+        <section id="page-blue" class="page">
+            <p class="eyebrow">02 - Blue Lab</p>
+            <h1 class="page-title" style="color:var(--c-blue)">Blue</h1>
+            <p class="page-sub">Reduces cortisol. Signals trust, security, and calm authority.</p>
+            <div class="mode-switcher" data-labcolor="blue">
+                <button class="mb active" data-mode="blue-game">- Game Mode</button>
+                <button class="mb" data-mode="blue-web">- Web Mode</button>
+            </div>
+            <div class="lab-body">
+                <div>
+                    <div id="blue-game" class="demo-wrap active">
+                        <div class="demo-shell">
+                            <div class="blue-game">
+                                <div class="hud-frame"><div class="hc-corner tl"></div><div class="hc-corner tr"></div><div class="hc-corner bl"></div><div class="hc-corner br"></div></div>
+                                <div class="mana-display">
+                                    <span class="mana-val" id="mana-val">650</span>
+                                    <span class="mana-lbl">Mana Reserve</span>
+                                    <div class="mana-track"><div class="mana-fill" id="mana-fill" style="width:65%"></div></div>
+                                    <button class="mana-btn" id="mana-btn">CAST ABILITY [Q]</button>
+                                </div>
+                                <div class="hud-footer">
+                                    <span class="hud-stat">REGEN: <span>+12/s</span></span>
+                                    <span class="hud-stat">STATUS: <span>ACTIVE</span></span>
+                                    <span class="hud-stat">CD: <span>0.0s</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fact-panel blue" style="margin-top:.75rem">
+                            <h4>Game - Blue</h4>
+                            <ul>
+                                <li>Mana / magic energy is blue in nearly every RPG - World of Warcraft, League of Legends, Diablo.</li>
+                                <li>Blue HUDs in strategy games (StarCraft, LoL) keep players in analytical mode rather than panic.</li>
+                                <li>Blue lighting in stealth games signals undetected / safe status.</li>
+                                <li>Rare-tier or legendary items in some games use blue loot text (varies by franchise).</li>
+                                <li>Water, sky, and cold environments are blue - players read it as distance or traversable space.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="blue-web" class="demo-wrap">
+                        <div class="demo-shell">
+                            <div class="blue-web">
+                                <div class="login-card">
+                                    <div class="login-head"><div class="lock-ico">- </div><div class="login-title">Sign in to your account</div><div class="login-sub">Secure, encrypted connection</div></div>
+                                    <div class="l-row"><label>Email address</label><input type="email" placeholder="you@example.com"></div>
+                                    <div class="l-row"><label>Password</label><input type="password" placeholder="••••••••"></div>
+                                    <button class="login-btn">Sign in securely</button>
+                                    <div class="ssl-badge">- 256-bit SSL - GDPR compliant</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fact-panel blue" style="margin-top:.75rem">
+                            <h4>Web - Blue</h4>
+                            <ul>
+                                <li>Facebook, Twitter, LinkedIn, PayPal, Stripe - blue dominates SaaS and fintech UI.</li>
+                                <li>Users rate blue interfaces as more trustworthy in eye-tracking studies.</li>
+                                <li>Blue primary action buttons show higher completion rates on high-stakes flows like payment.</li>
+                                <li>Blue focus rings on inputs (browser default) signal active/safe entry.</li>
+                                <li>Blue links are the oldest web convention - still the default in most browsers.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- IMAGES -->
+                    <div class="img-grid" style="margin-top:.75rem">
+                        <div class="img-placeholder"><img src="img/blue-1.jpg.jpg" alt="Blue example 1"></div>
+                        <div class="img-placeholder"><img src="img/blue-2.jpg.jpg" alt="Blue example 2"></div>
+                        <div class="img-placeholder"><img src="img/blue-3.jpg.jpg" alt="Blue example 3"></div>
+                        <div class="img-placeholder"><img src="img/blue-4.jpg.jpg" alt="Blue example 4"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- === GREEN === -->
+        <section id="page-green" class="page">
+            <p class="eyebrow">03 - Green Lab</p>
+            <h1 class="page-title" style="color:var(--c-green)">Green</h1>
+            <p class="page-sub">Permission, safety, and positive completion. The "go" signal across games and interfaces.</p>
+            <div class="mode-switcher" data-labcolor="green">
+                <button class="mb active" data-mode="green-game">- Game Mode</button>
+                <button class="mb" data-mode="green-web">- Web Mode</button>
+            </div>
+            <div class="lab-body">
+                <div>
+                    <div id="green-game" class="demo-wrap active">
+                        <div class="demo-shell">
+                            <div class="green-game" id="heal-area">
+                                <div class="heal-hud"><span class="heal-lbl">HP</span><div class="heal-track"><div class="heal-bar" id="heal-bar" style="width:32%"></div></div><span class="heal-pct" id="heal-pct">32%</span></div>
+                                <div class="heal-ring" id="heal-ring"></div>
+                                <button class="heal-btn" id="heal-btn">USE HEALTH POTION</button>
+                                <p class="click-hint" style="color:rgba(45,255,122,.25)">CLICK TO RESTORE HEALTH</p>
+                            </div>
+                        </div>
+                        <div class="fact-panel green" style="margin-top:.75rem">
+                            <h4>Game - Green</h4>
+                            <ul>
+                                <li>Health restoration is green in virtually every game - World of Warcraft, League of Legends, Genshin Impact.</li>
+                                <li>Green "safe zones" and extraction points appear in games like Escape from Tarkov.</li>
+                                <li>Quest completion markers frequently use green checkmarks.</li>
+                                <li>Minimap friendly units are typically shown in green, enemies in red.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="green-web" class="demo-wrap">
+                        <div class="demo-shell">
+                            <div class="green-web">
+                                <div class="g-form">
+                                    <div class="g-form-title">Subscribe to updates</div>
+                                    <div class="f-row"><label>Full name</label><input type="text" placeholder="Daniel Jensen"></div>
+                                    <div class="f-row"><label>Email address</label><input type="email" placeholder="daniel@example.com"></div>
+                                    <button class="g-submit" id="g-submit">Subscribe now</button>
+                                    <div class="g-toast" id="g-toast"><div class="g-toast-check">-</div><div class="g-toast-msg">Subscribed! Check your inbox.</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fact-panel green" style="margin-top:.75rem">
+                            <h4>Web - Green</h4>
+                            <ul>
+                                <li>Green success toasts and checkmarks confirm completed actions (form submit, payment, upload).</li>
+                                <li>Green "active" and "online" indicator dots appear in Slack, Discord, Teams.</li>
+                                <li>"Go live" / "Publish" buttons are frequently green - signal to proceed.</li>
+                                <li>Positive graph trends and upward stats are styled green in dashboards and analytics tools.</li>
+                                <li>Accessibility-compliant green passes WCAG contrast ratios more reliably than yellow.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- IMAGES -->
+                    <div class="img-grid" style="margin-top:.75rem">
+                        <div class="img-placeholder"><img src="img/green-1.jpg.jpg" alt="Green example 1"></div>
+                        <div class="img-placeholder"><img src="img/green-2.jpg.jpg" alt="Green example 2"></div>
+                        <div class="img-placeholder"><img src="img/green-3.jpg.jpg" alt="Green example 3"></div>
+                        <div class="img-placeholder"><img src="img/green-4.jpg.jpg" alt="Green example 4"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- === YELLOW === -->
+        <section id="page-yellow" class="page">
+            <p class="eyebrow">04 - Yellow Lab</p>
+            <h1 class="page-title" style="color:var(--c-yellow)">Yellow</h1>
+            <p class="page-sub">Peripheral attention without alarm. The yield signal - notice this, but don't panic.</p>
+            <div class="mode-switcher" data-labcolor="yellow">
+                <button class="mb active" data-mode="yellow-game">- Game Mode</button>
+                <button class="mb" data-mode="yellow-web">- Web Mode</button>
+            </div>
+            <div class="lab-body">
+                <div>
+                    <div id="yellow-game" class="demo-wrap active">
+                        <div class="demo-shell">
+                            <div class="yellow-game">
+                                <div class="q-hud">
+                                    <span class="q-lbl">ACTIVE QUEST: <span>The Yellow Road</span></span>
+                                    <span class="q-lbl">2 / 5 CHECKPOINTS</span>
+                                </div>
+                                <div class="quest-map">
+                                    <svg class="qm-svg" viewBox="0 0 260 180" fill="none">
+                                        <path d="M 18 20 Q 70 75 85 100 Q 95 130 78 118" stroke="rgba(255,208,0,.75)" stroke-width="2"/>
+                                        <path d="M 78 118 Q 95 75 135 28 Q 165 8 195 115 Q 215 155 245 20" stroke="rgba(255,208,0,.2)" stroke-width="2" stroke-dasharray="5 4"/>
+                                    </svg>
+                                    <div class="wp done p1"><div class="wp-dot"></div><span class="wp-lbl">Start</span></div>
+                                    <div class="wp cur p2"><div class="wp-dot"></div><span class="wp-lbl">Bridge</span></div>
+                                    <div class="wp p3"><div class="wp-dot"></div><span class="wp-lbl">Tower</span></div>
+                                    <div class="wp p4"><div class="wp-dot"></div><span class="wp-lbl">Cave</span></div>
+                                    <div class="wp p5"><div class="wp-dot"></div><span class="wp-lbl">Goal</span></div>
+                                </div>
+                                <p class="y-hint">YELLOW GUIDES WITHOUT BREAKING GAMEPLAY</p>
+                            </div>
+                        </div>
+                        <div class="fact-panel yellow" style="margin-top:.75rem">
+                            <h4>Game - Yellow</h4>
+                            <ul>
+                                <li>Quest markers, objective indicators, and loot highlights are yellow in GTA and various other games.</li>
+                                <li>Yellow draws peripheral vision effectively.</li>
+                                <li>Gold and collectibles are yellow - coins, stars, treasure chests.</li>
+                                <li>Interactable objects in many games use yellow outlines or glows.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="yellow-web" class="demo-wrap">
+                        <div class="demo-shell">
+                            <div class="yellow-web">
+                                <div class="toast-stack">
+                                    <div class="t-notice"><span class="t-ico">- </span><div><span class="t-title">Your session expires in 5 minutes</span><span class="t-body">Save your work or unsaved changes will be lost.</span></div></div>
+                                    <div class="t-notice info"><span class="t-ico">- </span><div><span class="t-title">Maintenance window tonight 02:00-04:00</span><span class="t-body">Some features will be briefly unavailable.</span></div></div>
+                                </div>
+                                <div class="new-toast" id="new-toast"><span class="t-ico">- </span><div><span class="t-title">Storage at 87% capacity</span><span class="t-body">Consider removing unused files.</span></div></div>
+                                <button class="toast-trigger-btn" id="toast-trigger">+ Trigger New Warning</button>
+                            </div>
+                        </div>
+                        <div class="fact-panel yellow" style="margin-top:.75rem">
+                            <h4>Web - Yellow</h4>
+                            <ul>
+                                <li>Warning toasts and banners use yellow/amber.</li>
+                                <li>Nielsen's severity scale maps yellow to "you should know about this" - not "stop everything".</li>
+                                <li>Yellow is used for cookie consent banners, maintenance notices, and non-critical system alerts.</li>
+                                <li>Input validation warnings (not yet errors) use yellow borders in many design systems.</li>
+                                <li>Yellow highlight on text (like browser Find function).</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- IMAGES -->
+                    <div class="img-grid" style="margin-top:.75rem">
+                        <div class="img-placeholder"><img src="img/yellow-1.jpg.jpg" alt="Yellow example 1"></div>
+                        <div class="img-placeholder"><img src="img/yellow-2.jpg.jpg" alt="Yellow example 2"></div>
+                        <div class="img-placeholder"><img src="img/yellow-3.jpg.jpg" alt="Yellow example 3"></div>
+                        <div class="img-placeholder"><img src="img/yellow-4.jpg.jpg" alt="Yellow example 4"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- === PURPLE === -->
+        <section id="page-purple" class="page">
+            <p class="eyebrow">05 - Purple Lab</p>
+            <h1 class="page-title" style="color:var(--c-purple)">Purple</h1>
+            <p class="page-sub">Magic, rarity, and luxury. Historically associated with royalty due to the cost of the dye.</p>
+            <div class="mode-switcher" data-labcolor="purple">
+                <button class="mb active" data-mode="purple-game">- Game Mode</button>
+                <button class="mb" data-mode="purple-web">- Web Mode</button>
+            </div>
+            <div class="lab-body">
+                <div>
+                    <div id="purple-game" class="demo-wrap active">
+                        <div class="demo-shell">
+                            <div class="purple-game">
+                                <div class="p-hud"><span class="p-lbl">SPELL LOADOUT - <span>3 charged</span></span><span class="p-lbl">MANA: <span>420 / 600</span></span></div>
+                                <div class="spell-orbs">
+                                    <div class="orb charged"><span class="orb-icon">-</span>FROST</div>
+                                    <div class="orb charged"><span class="orb-icon">-</span>STORM</div>
+                                    <div class="orb charged"><span class="orb-icon">-</span>VOID</div>
+                                    <div class="orb"><span class="orb-icon">-</span>INFERNO</div>
+                                    <div class="orb"><span class="orb-icon">-</span>DEATH</div>
+                                </div>
+                                <p class="p-hint">PURPLE = MAGIC / ARCANE IN GAME DESIGN</p>
+                            </div>
+                        </div>
+                        <div class="fact-panel purple" style="margin-top:.75rem">
+                            <h4>Game - Purple</h4>
+                            <ul>
+                                <li>Epic/Legendary rarity tier is purple in Diablo, Destiny, Borderlands..</li>
+                                <li>Arcane and void magic is purple across Warcraft, League of Legends, and Baldur's Gate.</li>
+                                <li>Poison and dark magic are sometimes purple where green is already used for standard poison.</li>
+                                <li>Purple portals and teleportation effects are common.</li>
+                                <li>Wraith, shadow, and undead enemies frequently use purple auras to signal supernatural threat.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div id="purple-web" class="demo-wrap">
+                        <div class="demo-shell">
+                            <div class="purple-web">
+                                <div class="premium-card">
+                                    <div class="crown">- </div>
+                                    <div class="prem-title">Premium Plan</div>
+                                    <div class="prem-sub">Everything you need, unlocked.</div>
+                                    <div class="prem-price">DKK 149 <span>/ month</span></div>
+                                    <ul class="prem-features"><li>Unlimited projects</li><li>Priority support</li><li>Advanced analytics</li></ul>
+                                    <button class="prem-btn">Upgrade to Premium</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fact-panel purple" style="margin-top:.75rem">
+                            <h4>Web - Purple</h4>
+                            <ul>
+                                <li>Purple is used for premium, pro, and upgrade tiers - Twitch, GitHub, Figma, Notion.</li>
+                                <li>Historically, purple dye was more expensive than gold - the rarity association is pre-digital.</li>
+                                <li>Creative industries (art, design, beauty) use purple to signal creativity and originality.</li>
+                                <li>Purple "visited link" colour is a browser default - users have learned it means "already seen".</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- IMAGES -->
+                    <div class="img-grid" style="margin-top:.75rem">
+                        <div class="img-placeholder"><img src="img/purple-1.jpg.jpg" alt="Purple example 1"></div>
+                        <div class="img-placeholder"><img src="img/purple-2.jpg.jpg" alt="Purple example 2"></div>
+                        <div class="img-placeholder"><img src="img/purple-3.jpg.jpg" alt="Purple example 3"></div>
+                        <div class="img-placeholder"><img src="img/purple-4.jpg.jpg" alt="Purple example 4"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- === SHOWCASE === -->
+        <section id="page-showcase" class="page">
+            <p class="eyebrow">06 - Documentation</p>
+            <h1 class="page-title">Showcase &amp; Process</h1>
+            <p class="page-sub">Layout, code architecture, design decisions, and iteration history.</p>
+            <div class="showcase-grid">
+                <div class="sc-card">
+                    <div class="sc-head"><span class="sc-title">Layout</span></div>
+                    <div class="sc-body">
+                        <div class="wf-mock">
+                            <div class="wf-nav-row"><span class="wf-active">[Color Lab]</span><span>Red</span><span>Blue</span><span>Green</span><span>...</span></div>
+                            <div class="wf-cols">
+                                <div class="wf-block">[MAIN]<br>Mode toggle<br>Demo area<br>Fact bullets<br>Image grid</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sc-card">
+                    <div class="sc-head"><span class="sc-title">CSS - Colour Token System</span><span class="sc-badge code">Code</span></div>
+                    <div class="sc-body">
+                        <div class="code-block">
+                            <span class="sel">:root</span> {
+                            <span class="cmt">/* single source of truth */</span>
+                            <span class="prop">--c-red</span>:    <span class="val">#ff3333</span>;
+                            <span class="prop">--c-blue</span>:   <span class="val">#2d8fff</span>;
+                            <span class="prop">--c-green</span>:  <span class="val">#2dff7a</span>;
+                            <span class="prop">--c-yellow</span>: <span class="val">#ffd000</span>;
+                            <span class="prop">--c-purple</span>: <span class="val">#b366ff</span>;
+                            }
+                            <span class="cmt">/* JS sets --accent at runtime */</span>
+                        </div>
+                        <p style="margin-top: 1rem; font-size: 0.75rem; color: var(--muted); line-height: 1.6;">
+                            <strong style="color: var(--text);">Why this matters:</strong><br><br>
+                            <strong style="color: var(--text);">Easy Updates:</strong> Storing colors in :root variables means if you ever need to change a color, you only have to do it in one place.<br><br>
+                            <strong style="color: var(--text);">Instant Theming:</strong> JavaScript simply updates the --accent variable when you switch pages, instantly changing the whole theme without the need for messy CSS classes.
+                        </p>
+                    </div>
+                </div>
+                <div class="sc-card">
+                    <div class="sc-head"><span class="sc-title">Design Decisions</span></div>
+                    <div class="sc-body">
+                        <div class="dec-list">
+                            <div class="dec-item"><span class="dec-n">01</span><p class="dec-t"><strong>Dark base.</strong> Near-black background gives each color maximum perceptual weight.</p></div>
+                            <div class="dec-item"><span class="dec-n">02</span><p class="dec-t"><strong>Bullet facts only.</strong> Fact panels use direct statements - no filler text.</p></div>
+                            <div class="dec-item"><span class="dec-n">03</span><p class="dec-t"><strong>Game + Web per colour.</strong> Shows the same psychological effect across two completely different contexts.</p></div>
+                            <div class="dec-item"><span class="dec-n">04</span><p class="dec-t"><strong>Image boxes.</strong> 4 slots per lab - 2 game, 2 web - to highlight usage of color.</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sc-card">
+                    <div class="sc-head"><span class="sc-title">Iteration History</span><span class="sc-badge iter">Iteration</span></div>
+                    <div class="sc-body">
+                        <div class="iter-list">
+                            <div class="iter-item"><span class="iter-tag v1">v1</span><p class="iter-t">Initial draft with light background, 8 labs, and long prose descriptions. Dropped - colour demos needed dark backgrounds for contrast, and text was too wordy.</p></div>
+                            <div class="iter-item"><span class="iter-tag v2">v2</span><p class="iter-t">Switched to dark theme. Removed Brown, Black, and Gray labs, focusing on 5 core colors (Red, Blue, Green, Yellow, Purple). Replaced prose with concise bullet facts.</p></div>
+                            <div class="iter-item"><span class="iter-tag v3">v3</span><p class="iter-t">Current - 5 labs, bullet-only content, 4 image slots per lab, and a full-width layout with the sidebar completely removed for better focus.</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sc-card">
+                    <div class="sc-head"><span class="sc-title">Some Research</span><span class="sc-badge">Research</span></div>
+                    <div class="sc-body">
+                        <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;">
+                            <li style="font-size:.8rem;color:var(--text);line-height:1.55;padding-left:1rem;position:relative;"><span style="position:absolute;left:0;color:var(--accent);font-size:.75rem;top:.05rem;">-</span>Elliot & Maier (2012) - Color psychology review</li>
+                            <li style="font-size:.8rem;color:var(--text);line-height:1.55;padding-left:1rem;position:relative;"><span style="position:absolute;left:0;color:var(--accent);font-size:.75rem;top:.05rem;">-</span>Kuppers (1973) - Color systems & perception</li>
+                            <li style="font-size:.8rem;color:var(--text);line-height:1.55;padding-left:1rem;position:relative;"><span style="position:absolute;left:0;color:var(--accent);font-size:.75rem;top:.05rem;">-</span>Nielsen (1993) - Severity scales in UI</li>
+                            <li style="font-size:.8rem;color:var(--text);line-height:1.55;padding-left:1rem;position:relative;"><span style="position:absolute;left:0;color:var(--accent);font-size:.75rem;top:.05rem;">-</span>Kahneman (2011) - Loss aversion & urgency</li>
+                            <li style="font-size:.8rem;color:var(--text);line-height:1.55;padding-left:1rem;position:relative;"><span style="position:absolute;left:0;color:var(--accent);font-size:.75rem;top:.05rem;">-</span>Norman (2013) - Emotional design principles</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</div><!-- .app -->
+
+<script>
+    // simple navigation
+    var pages = document.querySelectorAll('.page');
+    var buttons = document.querySelectorAll('.nb');
+
+    buttons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = this.dataset.page;
+
+            // switch pages
+            pages.forEach(function(p) { p.classList.remove('active'); });
+            document.getElementById('page-' + id).classList.add('active');
+
+            // switch buttons
+            buttons.forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+
+            // change theme color
+            var color = '#e6e6f0';
+            if(id == 'red') color = '#ff3333';
+            if(id == 'blue') color = '#2d8fff';
+            if(id == 'green') color = '#2dff7a';
+            if(id == 'yellow') color = '#ffd000';
+            if(id == 'purple') color = '#b366ff';
+
+            document.documentElement.style.setProperty('--accent', color);
+            document.getElementById('logo-dot').style.color = color;
+        });
+    });
+
+    // home cards click
+    document.querySelectorAll('.hc').forEach(function(card) {
+        card.addEventListener('click', function() {
+            document.querySelector('.nb[data-page="' + this.dataset.nav + '"]').click();
+        });
+    });
+
+    // mode switcher
+    document.querySelectorAll('.mb').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var lab = this.closest('.page');
+            lab.querySelectorAll('.mb').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+
+            lab.querySelectorAll('.demo-wrap').forEach(function(d) { d.classList.remove('active'); });
+            document.getElementById(this.dataset.mode).classList.add('active');
+        });
+    });
+
+    // red damage
+    var dmgDemo = document.getElementById('dmg-demo');
+    var hpBar = document.getElementById('hp-bar');
+    var hp = 72;
+
+    dmgDemo.addEventListener('click', function() {
+        dmgDemo.classList.remove('hit');
+        void dmgDemo.offsetWidth;
+        dmgDemo.classList.add('hit');
+
+        hp = hp - Math.floor(Math.random() * 14 + 7);
+        if(hp < 4) hp = 72;
+
+        hpBar.style.width = hp + '%';
+        if(hp < 30) hpBar.style.filter = 'brightness(1.3)';
+        else hpBar.style.filter = '';
+    });
+
+    // red countdown
+    var ch = 2, cm = 47, cs = 33;
+    setInterval(function() {
+        cs--;
+        if(cs < 0) { cs = 59; cm--; }
+        if(cm < 0) { cm = 59; ch--; }
+        if(ch < 0) { ch = 0; cm = 0; cs = 0; }
+
+        document.getElementById('cd-h').textContent = String(ch).padStart(2, '0');
+        document.getElementById('cd-m').textContent = String(cm).padStart(2, '0');
+        document.getElementById('cd-s').textContent = String(cs).padStart(2, '0');
+    }, 1000);
+
+    // green heal
+    var healBar = document.getElementById('heal-bar');
+    var healPct = document.getElementById('heal-pct');
+    var healRing = document.getElementById('heal-ring');
+    var healBtn = document.getElementById('heal-btn');
+    var hpv = 32;
+
+    healBtn.addEventListener('click', function() {
+        hpv = hpv + Math.floor(Math.random() * 22 + 14);
+        if(hpv > 100) hpv = 100;
+
+        healBar.style.width = hpv + '%';
+        healPct.textContent = hpv + '%';
+
+        healRing.classList.remove('pop');
+        void healRing.offsetWidth;
+        healRing.classList.add('pop');
+
+        if(hpv >= 95) {
+            setTimeout(function() {
+                hpv = 18;
+                healBar.style.width = '18%';
+                healPct.textContent = '18%';
+            }, 1500);
+        }
+    });
+
+    // green form
+    var gSubmit = document.getElementById('g-submit');
+    var gToast = document.getElementById('g-toast');
+
+    gSubmit.addEventListener('click', function() {
+        gToast.classList.add('show');
+        gSubmit.textContent = '- Subscribed!';
+        gSubmit.style.background = '#16a34a';
+
+        setTimeout(function() {
+            gToast.classList.remove('show');
+            gSubmit.textContent = 'Subscribe now';
+            gSubmit.style.background = '';
+        }, 4000);
+    });
+
+    // blue mana
+    var manaVal = document.getElementById('mana-val');
+    var manaFill = document.getElementById('mana-fill');
+    var manaBtn = document.getElementById('mana-btn');
+    var mv = 650;
+    var maxMv = 1000;
+
+    manaBtn.addEventListener('click', function() {
+        mv = mv - Math.floor(Math.random() * 140 + 80);
+        if(mv < 0) mv = 0;
+
+        manaVal.textContent = mv;
+        manaFill.style.width = (mv / maxMv * 100) + '%';
+        manaVal.style.textShadow = '0 0 30px rgba(45,143,255,.9)';
+
+        setTimeout(function() { manaVal.style.textShadow = ''; }, 200);
+
+        var regen = setInterval(function() {
+            mv = mv + 12;
+            if(mv >= maxMv) {
+                mv = maxMv;
+                clearInterval(regen);
+            }
+            manaVal.textContent = mv;
+            manaFill.style.width = (mv / maxMv * 100) + '%';
+        }, 200);
+    });
+
+    // yellow toast
+    var toastTrig = document.getElementById('toast-trigger');
+    var newToast = document.getElementById('new-toast');
+    var ts = false;
+
+    toastTrig.addEventListener('click', function() {
+        ts = !ts;
+        if(ts) {
+            newToast.classList.add('show');
+            toastTrig.textContent = 'Dismiss Warning';
+        } else {
+            newToast.classList.remove('show');
+            toastTrig.textContent = '+ Trigger New Warning';
+        }
+    });
+</script>
+</body>
+</html>
